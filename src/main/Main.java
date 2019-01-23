@@ -43,7 +43,7 @@ public class Main {
 //        }
 //        System.out.println(graph.getNodeGrade(2));
 
-        System.out.println(graph.getAdjacentNodesForEdge(0)[0]);
+        System.out.print(graph.bfs(4));
         
     }
     

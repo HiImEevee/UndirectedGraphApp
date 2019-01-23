@@ -17,6 +17,11 @@ public class Edge {
         this.y = y;
     }
     
+    public Boolean equals(Edge edge) {
+        return Math.min(this.x, this.y) == Math.min(edge.x, edge.y) && 
+               Math.max(this.x, this.y) == Math.max(edge.x, edge.y);
+    }
+    
     @Override
     public String toString(){
         return " "+x+" "+y+" ";

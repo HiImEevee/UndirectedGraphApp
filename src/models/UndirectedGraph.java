@@ -68,7 +68,15 @@ public class UndirectedGraph {
             int numEdges =(int) Files.lines(pathEdge)
                                .count();
             graph.setNumEdges(numEdges);
-            graph.setEdgesList(UndirectedGraph.initEdges(pathEdge));
+            List<Edge> edgesList = UndirectedGraph.initEdges(pathEdge);
+            for(int i = 0; i < edgesList.size() - 1; i++) {
+                for(int j = i + 1; j < edgesList.size(); j++) {
+                    if(edgesList.get(i).equals(edgesList.get(j))) {
+                        edgesList.remove(j);
+                    }
+                }
+            }
+            graph.setEdgesList(edgesList);
         } catch (IOException | IndexOutOfBoundsException ex) {
             ex.printStackTrace();
         }
@@ -110,15 +118,9 @@ public class UndirectedGraph {
     
     public void generateNodesGrades() {
         this.nodesGrades = new int[Constants.NUM_MAX_NODES];
-        if(this.adjacencyMatrix == null) {
-            generateAdjacencyMatrix();
-        }
-        for(int i = 1; i <= this.numNodes; i++) {
-            for(int j = 1; j <= this.numNodes; j++) {
-                if(this.adjacencyMatrix[i][j] == 1) {
-                    this.nodesGrades[i]++;
-                }
-            }
+        for(Edge edge : this.edgesList) {
+            this.nodesGrades[edge.x]++;
+            this.nodesGrades[edge.y]++;
         }
     }
     
@@ -234,5 +236,82 @@ public class UndirectedGraph {
             }
         }
         return nodesList;
+    }
+    
+    public Boolean graphHasCycles() {
+        int[] usedNodes = new int[Constants.NUM_MAX_NODES];
+        for(Edge edge : this.edgesList) {
+            if(usedNodes[edge.x] == 1 && usedNodes[edge.y] == 1) {
+                return true;
+            } else {
+                usedNodes[edge.x] = usedNodes[edge.y] = 1;
+            }
+        }
+        return false;
+    }
+    
+    public void generateAllCyclesOfLengthN(int n, List<List<Integer>> cyclesList, List<Integer> currentCycle, int[] usedNodes) {
+        for(int i = 1; i <= this.numNodes; i++) {
+            int pos = currentCycle.size();
+            if((pos == 0 || this.adjacencyMatrix[i][currentCycle.get(pos - 1)] == 1) && usedNodes[i] == 0) {
+                usedNodes[i] = 1;
+                currentCycle.add(i);
+                if(pos == n - 1) {
+                    if(this.adjacencyMatrix[currentCycle.get(pos)][currentCycle.get(0)] == 1) {
+                        currentCycle.add(currentCycle.get(0));
+                        cyclesList.add(new ArrayList<Integer>(currentCycle));
+                        currentCycle.remove(pos + 1);
+                    }
+                } else {
+                    generateAllCyclesOfLengthN(n, cyclesList, currentCycle, usedNodes);
+                }
+                currentCycle.remove(pos);
+                usedNodes[i] = 0;
+            }
+        }
+    }
+    
+    public List<List<Integer>> getAllCyclesOfLengthN(int n) {
+        if(this.adjacencyMatrix == null) {
+            generateAdjacencyMatrix();
+        }
+        List<List<Integer>> cyclesList = new ArrayList<List<Integer>>();
+        generateAllCyclesOfLengthN(n, cyclesList, new ArrayList<Integer>(), new int[Constants.NUM_MAX_NODES]);
+        System.out.println(cyclesList);
+        return cyclesList;
+    }
+   
+    public List<Integer> bfs() {
+        return bfs(1);
+    }
+    public List<Integer> bfs(int node) {
+        if(this.adjacencyMatrix == null) {
+            generateAdjacencyMatrix();
+        }
+        List<Integer> result = new ArrayList<Integer>();
+        int[] usedNodes = new int[Constants.NUM_MAX_NODES];
+        usedNodes[node] = 1;
+        result.add(node);
+        int first = 0, last = 0;
+        while(first <= last) {
+            for(int i = 1; i <= this.numNodes; i++) {
+                if(usedNodes[i] == 0 && this.adjacencyMatrix[i][result.get(first)] == 1) {
+                    usedNodes[i] = 1;
+                    result.add(i);
+                    last++;
+                }
+            }
+            first++;
+        }
+        return result;
+    }
+    
+    public List<Integer> dfs() {
+        return dfs(1);
+    }
+    
+    public List<Integer> dfs(int node) {
+        List<Integer> result = new ArrayList<Integer>();
+        return result;
     }
 }
